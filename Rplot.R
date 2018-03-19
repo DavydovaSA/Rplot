@@ -31,32 +31,9 @@ if (!exists('DT')){
   DT <- data.table(read.csv('./data/040510-Imp-RF-comtrade.csv', as.is = T))
 }
 
-# отбир данных по странам согласно варианту задания
-unique(DT$Reporter)
-DT <- DT[ , United := '']
-for (i in 1:nrow(DT))
-  { if (DT$Reporter[i] == 'Azerbaijan')
-  DT$United[i] <- DT$Reporter[i];
-  if (DT$Reporter[i] == 'Belarus')
-    DT$United[i] <- DT$Reporter[i];
-if (DT$Reporter[i] == 'Kazakhstan')
-  DT$United[i] <- DT$Reporter[i];
-
-}
-DT1 <- DT[-(1:15)]
-DT2 <- DT1[-(11:24)]
-DT3 <- DT2[-(23:27)]
-DT4 <- DT3[-(35:42)]
-DT5 <- DT4[-(45:54)]
-DT6 <- DT5[-(57:79)]
-DT7 <- DT6[-(69:75)]
-DT8 <- DT7[-(81:87)]
-DT9 <- DT8[-(93:97)]
-DT10 <- DT9[-(115:125)]
-DT11 <- DT10[-(127:143)]
-DT12 <- DT11[-(134:141)]
-DT13 <- DT12[-(141:141)]
-DT <- DT13
+# отбор данных по странам согласно варианту задания
+DT1 <- DT[Reporter %in% c('Belarus', 'Kazakhstan', 'Azerbaijan')]
+DT <- DT1
 
 # заполнение пропусков по переменной Netweight.kg средними значениями
 DT[, Netweight.kg := as.double(Netweight.kg)]
@@ -76,7 +53,7 @@ DT[, Trade.Value.USD:= as.double(Trade.Value.USD)]
 gp <- ggplot(data = DT,
              aes(x = Netweight.kg.median, y = Trade.Value.USD))
 gp <- gp + geom_point()
-gp <- gp + facet_grid(. ~ United)
+gp <- gp + facet_grid(. ~ Reporter)
 gp <- gp + geom_smooth(method = 'lm')
 # добавление подписей осей и заголовок
 gp <- gp + xlab('Масса поставки') 
