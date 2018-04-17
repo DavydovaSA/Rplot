@@ -1,0 +1,69 @@
+---
+title: "Laboratornaya 5"
+author: "Davydova Svetlana"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+---
+
+## Задание
+Первая карта: GVis-картограмма со значениями показателя из базы Всемирного банка.
+ Согласно варианту: показатель - любой из раздела «Climate Change».
+Вторая карта: leaflet-карта минимум с пятью объектами по выбору студента.
+ В работе это: 5 ветеринарных клиник западной и юго-западной частей Москвы.
+
+# GVis-картограмма  
+Построена по показателю «Access to electricity (% of population)» базы Всемирного банка.
+
+```{r Интерактивная картограмма, results = 'asis', message = F, cashe = T}
+library('WDI')
+library('googleVis')
+library('data.table')
+
+# загрузка данных по всем странам, 2014 год, показатель
+dan <- WDI(indicator = 'EG.ELC.ACCS.ZS', start = 2014, end = 2014)
+DT <- data.table(country = dan$country, value = dan$EG.ELC.ACCS.ZS)
+
+# объект: таблица исходных данных
+g.tbl <- gvisTable(data = DT, options = list(width = 220, height = 400))
+
+# объект: интерактивная карта
+g.chart <- gvisGeoChart(data = DT, 
+                        locationvar = 'country', 
+                        colorvar = 'value', 
+                        options = list(width = 600, 
+                                       height = 400, 
+                                       dataMode = 'regions'))
+
+# размещение таблицы и карты на одной панели
+TG <- gvisMerge(g.tbl, g.chart, 
+                horizontal = TRUE, 
+                tableOptions = 'bgcolor=\"#CCCCCC\" cellspacing=10')
+
+# вставляем результат в html-документ
+print(TG, 'chart')
+```
+
+# Карта на основе leaflet  
+leaflet-карта со след. объектами: 
+ 5 ветеринарных клиник западной и юго-западной частей Москвы:
+
+* Био-Вет (ул. Доватора, 3)
+* Тигренок (ул. Бурденко, 11А, стр. 1)
+* Ветеринарная клиника Вив (ул. Арбат, 30/3с3)
+* Груминг салон Моника (Кутузовский просп., 27)
+* Белый Клык (ул. Красная Пресня, 6/2с2)   
+
+```{r Карта на основе leaflet, , results = 'asis', message = F}
+library(leaflet)
+vet <- data.frame(place = c("Био-Вет", "Тигренок",
+                            "Вет.клиника Вив", "Груминг салон Моника", "Белый Клык"),
+latitude = c(55.724210568984994, 55.7385660689921, 55.74994206896172, 55.74359806900504, 55.7615885689619),
+longitude = c(37.57128200000001, 37.580831499999974, 37.58981449999997, 37.54565350000001, 37.5749565))
+vet %>% leaflet() %>% addTiles() %>%
+ addMarkers(popup = vet$place,
+ clusterOptions = markerClusterOptions()) %>%
+ addCircles(weight = 1, radius = 10)
+```
